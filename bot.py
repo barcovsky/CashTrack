@@ -12,7 +12,10 @@ BOT_TOKEN = "7607235027:AAGFaSH5YY_t_SIC0hqp9t9MCT8A75EL1MA"
 
 # Настройки Google Sheets
 SPREADSHEET_NAME = "1dAazjsbeL49vn0SwME4Avxtm4CjYqCWcc4TKfRmPh9Q"  # Используем ID таблицы
-CREDENTIALS_FILE = "nodal-alcove-351723-22e4e5a3bd10.json"
+import json
+import os
+
+credentials_json = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +29,7 @@ dp.include_router(router)  # Добавляем роутер в диспетче
 
 # Подключение к Google Sheets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
-creds = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_json, scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key(SPREADSHEET_NAME).sheet1  # Открываем по ID
 
