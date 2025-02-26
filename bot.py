@@ -66,3 +66,16 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+from fastapi import FastAPI
+import uvicorn
+
+app = FastAPI()
+
+@app.get("/")
+async def read_root():
+    return {"message": "Bot is running!"}
+
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 8000))  # Render требует открытый порт
+    uvicorn.run(app, host="0.0.0.0", port=port)
