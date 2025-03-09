@@ -188,10 +188,11 @@ def get_today_expenses():
 
 
 def recalculate_daily_budget(initial_budget):
-    try:
-        # Используем фейковую дату, если она установлена
-	armenia_tz = pytz.timezone('Asia/Yerevan')
-	current_date = datetime.now(armenia_tz) if not fake_date else datetime.strptime(fake_date, "%Y-%m-%d")
+	try:
+		# Используем фейковую дату, если она установлена
+		import pytz  # 🟢 Импортируем pytz для часовых поясов
+		armenia_tz = pytz.timezone('Asia/Yerevan')
+		current_date = datetime.now(armenia_tz) if not fake_date else datetime.strptime(fake_date, "%Y-%m-%d")
 
         
         # 🟢 Исправлено: считаем оставшиеся дни без +1 дня
