@@ -550,8 +550,9 @@ def generate_expense_chart():
 
 			print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Remaining budget: {remaining_budget}, Daily budget: {daily_budget}")
 			
-			# 🟢 Добавляем дневной бюджет для каждой даты
-			budget_line.append(daily_budget)
+			# 🟢 Добавляем дневной бюджет только если длины совпадают
+			if len(budget_line) < len(sorted_dates):
+				budget_line.append(daily_budget)
 
 		# 🟢 Строим столбчатую диаграмму для фактических расходов
 		plt.figure(figsize=(10, 5))
@@ -577,6 +578,7 @@ def generate_expense_chart():
 	except Exception as e:
 		logging.error(f"Ошибка при генерации графика: {e}")
 		return None
+
 
 
 
