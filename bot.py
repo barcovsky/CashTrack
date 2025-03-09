@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import os
-from aiogram.types import InputFile
+from aiogram.types import FSInputFile  
 from io import BytesIO, BufferedReader 
 
 
@@ -505,16 +505,18 @@ async def send_expense_chart(message: Message):
     try:
         image_stream = generate_expense_chart()
         if image_stream:
-            # 🛠️ Исправление: оборачиваем BytesIO в BufferedReader
-            image_stream.name = "expense_chart.png"
-            photo = InputFile(BufferedReader(image_stream))  # Используем BufferedReader
+            # 🟢 Сохраняем график во временный файл
+            with open("expense_chart.png", "wb") as f:
+                f.write(image_stream.getbuffer())
+            
+            # 🟢 Отправляем файл как FSInputFile
+            photo = FSInputFile("expense_chart.png")
             await bot.send_photo(chat_id=message.chat.id, photo=photo, caption="📊 График расходов по категориям")
         else:
             await message.answer("Не удалось создать график. Проверь данные в таблице.")
     except Exception as e:
         logging.error(f"Ошибка при отправке графика: {e}")
         await message.answer("Произошла ошибка при отправке графика.")
-
 
 
 
