@@ -515,7 +515,7 @@ def generate_expense_chart():
 				date_totals[current_date] = 0  # 🟢 Если нет трат за день, ставим 0
 			current_date += timedelta(days=1)
 
-		# 🟢 Если текущая дата больше последней в date_totals, добавляем её с нулём
+		# 🟢 Добавляем текущую дату с нулевыми тратами, если её ещё нет
 		current_date = datetime.now(armenia_tz).date()
 		if current_date > end_date:
 			date_totals[current_date] = 0
@@ -548,6 +548,8 @@ def generate_expense_chart():
 				daily_budget = 0
 
 			print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Remaining budget: {remaining_budget}, Daily budget: {daily_budget}")
+			
+			# 🟢 Добавляем дневной бюджет для каждой даты
 			budget_line.append(daily_budget)
 
 		# 🟢 Строим столбчатую диаграмму для фактических расходов
@@ -574,6 +576,8 @@ def generate_expense_chart():
 	except Exception as e:
 		logging.error(f"Ошибка при генерации графика: {e}")
 		return None
+
+
 
 
 # 🖼 Команда /chart для отправки графика
