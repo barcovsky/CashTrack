@@ -470,7 +470,7 @@ def generate_expense_chart():
         total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
         first_day_budget = float(sheet.acell("B18").value.strip().replace(",", "").replace(" ", ""))
 
-        # Обрабатываем данные расходов
+        # Обрабатываем данные расходов и собираем суммы по датам
         for row in values:
             if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
                 continue
@@ -483,9 +483,20 @@ def generate_expense_chart():
             else:
                 date_totals[date] = amount
 
-        # Сортируем даты по возрастанию
-        sorted_dates = sorted(date_totals.keys())
-        sorted_amounts = [date_totals[date] for date in sorted_dates]
+        # 🟢 Сортируем даты и заполняем пропущенные даты нулями
+        all_dates = sorted(date_totals.keys())
+        start_date = all_dates[0]
+        end_date = all_dates[-1]
+        current_date = start_date
+
+        # 🟢 Создаём полные списки дат и расходов
+        sorted_dates = []
+        sorted_amounts = []
+
+        while current_date <= end_date:
+            sorted_dates.append(current_date)
+            sorted_amounts.append(date_totals.get(current_date, 0))  # Если трат не было, ставим 0
+            current_date += timedelta(days=1)
 
         # 🟢 Создаём динамическую линию бюджета
         budget_line = []
@@ -498,12 +509,18 @@ def generate_expense_chart():
                 budget_line.append(first_day_budget)
             else:
                 # 🟢 Последующие дни: считаем оставшийся бюджет
-                spent_so_far += date_totals[sorted_dates[i - 1]]
-                remaining_days = len(sorted_dates) - i
-                daily_budget = max((remaining_budget - spent_so_far) / remaining_days, 0) if remaining_days > 0 else 0
+                spent_so_far += sorted_amounts[i - 1]  # Траты до текущего дня
+                remaining_days = len(sorted_dates) - i  # Оставшиеся дни
+
+                # 🟢 Если есть оставшиеся дни, делим остаток бюджета на них
+                if remaining_days > 0:
+                    daily_budget = max((total_budget - spent_so_far) / remaining_days, 0)
+                else:
+                    daily_budget = 0  # Если дней не осталось, бюджет 0
+
                 budget_line.append(daily_budget)
 
-        # Строим график по дням
+        # 🟢 Строим график по дням
         plt.figure(figsize=(10, 5))
         plt.plot(sorted_dates, sorted_amounts, marker='o', linestyle='-', color='skyblue', label='Фактические расходы')
         
