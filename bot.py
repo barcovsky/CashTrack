@@ -465,16 +465,10 @@ def generate_expense_chart():
         # Получаем данные из Google Sheets
         values = sheet.get("A21:C1000")
         date_totals = {}
-        budget_history = {}
 
-        # 🟢 Получаем историю дневного бюджета для каждой даты
-        all_values = sheet.get_all_values()
-        for row in all_values:
-            if len(row) >= 2 and row[0] == "Daily budget limit, AMD":
-                for i in range(2, len(row)):
-                    date_cell = all_values[0][i].strip()
-                    if date_cell:
-                        budget_history[date_cell] = float(row[i].strip().replace(",", "").replace(" ", ""))
+        # 🟢 Получаем значения бюджета из ячеек B17 и B18
+        total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
+        first_day_budget = float(sheet.acell("B18").value.strip().replace(",", "").replace(" ", ""))
 
         # Обрабатываем данные расходов
         for row in values:
@@ -495,9 +489,19 @@ def generate_expense_chart():
 
         # 🟢 Создаём динамическую линию бюджета
         budget_line = []
-        for date in sorted_dates:
-            budget = budget_history.get(date, get_daily_budget_limit())  # Если нет истории, берём текущий бюджет
-            budget_line.append(budget)
+        remaining_budget = total_budget  # Изначально весь бюджет
+        spent_so_far = 0  # Потрачено на текущий день
+
+        for i, date in enumerate(sorted_dates):
+            if i == 0:
+                # 🟢 Первый день: бюджет из B18
+                budget_line.append(first_day_budget)
+            else:
+                # 🟢 Последующие дни: считаем оставшийся бюджет
+                spent_so_far += date_totals[sorted_dates[i - 1]]
+                remaining_days = len(sorted_dates) - i
+                daily_budget = max((remaining_budget - spent_so_far) / remaining_days, 0) if remaining_days > 0 else 0
+                budget_line.append(daily_budget)
 
         # Строим график по дням
         plt.figure(figsize=(10, 5))
