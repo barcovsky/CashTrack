@@ -17,11 +17,11 @@ initial_budget = None
 fake_date = None  # Переменная для фейковой даты (для тестов)
 
 # Токен бота
-BOT_TOKEN = "7607235027:AAGFaSH5YY_t_SIC0hqp9t9MCT8A75EL1MA"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # Настройки Google Sheets
-SPREADSHEET_NAME = "1dAazjsbeL49vn0SwME4Avxtm4CjYqCWcc4TKfRmPh9Q"
-CREDENTIALS_FILE = "nodal-alcove-351723-22e4e5a3bd10.json"
+SPREADSHEET_NAME = os.getenv("SPREADSHEET_NAME")
+CREDENTIALS_FILE = os.getenv("CREDENTIALS_FILE")
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
