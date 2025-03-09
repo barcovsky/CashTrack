@@ -505,8 +505,9 @@ async def send_expense_chart(message: Message):
     try:
         image_stream = generate_expense_chart()
         if image_stream:
-            # 🛠️ Оборачиваем BytesIO в InputFile
-            photo = InputFile(image_stream, filename="expense_chart.png")
+            # 🛠️ Исправление: передаём BytesIO напрямую в InputFile
+            image_stream.name = "expense_chart.png"  # Добавляем имя файлу в памяти
+            photo = InputFile(image_stream)  # Исправленный код
             await bot.send_photo(chat_id=message.chat.id, photo=photo, caption="📊 График расходов по категориям")
         else:
             await message.answer("Не удалось создать график. Проверь данные в таблице.")
