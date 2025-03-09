@@ -466,7 +466,6 @@ def generate_expense_chart():
         date_totals = {}
 
         # 🟢 Получаем значения бюджета из ячеек B17 и B18
-
         total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
         first_day_budget = float(sheet.acell("B18").value.strip().replace(",", ".").replace(" ", ""))
 
@@ -499,7 +498,8 @@ def generate_expense_chart():
         # 🟢 Отладка трат
         print("Sorted amounts:", sorted_amounts)
 
-                budget_line = []
+        # 🟢 Создаём линии бюджета и рассчитываем оставшийся бюджет
+        budget_line = []
         remaining_budget = total_budget  # 🟢 Изначально весь бюджет
         spent_so_far = 0  # 🟢 Потрачено на текущий день
 
@@ -523,8 +523,6 @@ def generate_expense_chart():
 
                 budget_line.append(daily_budget)
 
-
-
         # Строим график
         plt.figure(figsize=(10, 5))
         plt.plot(sorted_dates, sorted_amounts, marker='o', linestyle='-', color='skyblue', label='Фактические расходы')
@@ -546,6 +544,7 @@ def generate_expense_chart():
     except Exception as e:
         logging.error(f"Ошибка при генерации графика: {e}")
         return None
+
 
 
 # 🖼 Команда /chart для отправки графика
