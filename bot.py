@@ -481,101 +481,92 @@ scheduler.add_job(send_weekly_stats, CronTrigger(day_of_week='mon', hour=14, min
 
 # 📊 Функция для создания графика расходов по категориям
 def generate_expense_chart():
-    try:
-        values = sheet.get("A21:C1000")
-        date_totals = {}
+	try:
+		values = sheet.get("A21:C1000")
+		date_totals = {}
 
-        # 🟢 Получаем значения бюджета из ячеек B17 и B18
-        total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
-        first_day_budget = float(sheet.acell("B18").value.strip().replace(",", ".").replace(" ", ""))
+		# 🟢 Получаем значения бюджета из ячеек B17 и B18
+		total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
+		first_day_budget = float(sheet.acell("B18").value.strip().replace(",", ".").replace(" ", ""))
 
-        # 🟢 Временно ограничим бюджет первого дня до разумной суммы
-        if first_day_budget > total_budget:
-            print("Warning: First day budget is too high! Using total budget instead.")
-            first_day_budget = total_budget  # Временно заменим, чтобы график не ломался
+		if first_day_budget > total_budget:
+			print("Warning: First day budget is too high! Using total budget instead.")
+			first_day_budget = total_budget
 
-        # 🟢 Отладка бюджета
-        print("Total budget (B17):", total_budget)
-        print("First day budget (B18):", first_day_budget)
+		print("Total budget (B17):", total_budget)
+		print("First day budget (B18):", first_day_budget)
 
-        for row in values:
-            if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
-                continue
+		for row in values:
+			if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
+				continue
+			date = datetime.strptime(row[2].strip(), "%Y-%m-%d")
+			amount = float(row[1].strip().replace(",", "").replace(" ", ""))
+			date_totals[date] = date_totals.get(date, 0) + amount
 
-            date = datetime.strptime(row[2].strip(), "%Y-%m-%d")
-            amount = float(row[1].strip().replace(",", "").replace(" ", ""))
-            date_totals[date] = date_totals.get(date, 0) + amount
+		# 🟢 Добавляем нулевые траты для дней без расходов
+		start_date = min(date_totals.keys())
+		end_date = max(date_totals.keys())
+		current_date = start_date
 
-        # 🟢 Отладка данных по датам и тратам
-        print("Dates and amounts:", date_totals)
+		while current_date <= end_date:
+			if current_date not in date_totals:
+				date_totals[current_date] = 0  # 🟢 Если нет трат за день, ставим 0
+			current_date += timedelta(days=1)
 
-        sorted_dates = sorted(date_totals.keys())
-        sorted_amounts = []
+		print("Dates and amounts:", date_totals)
 
-        for current_date in sorted_dates:
-            sorted_amounts.append(date_totals.get(current_date, 0))
+		sorted_dates = sorted(date_totals.keys())
+		sorted_amounts = [date_totals.get(date, 0) for date in sorted_dates]
 
-        # 🟢 Отладка трат
-        print("Sorted amounts:", sorted_amounts)
+		print("Sorted amounts:", sorted_amounts)
 
-        # 🟢 Создаём линии бюджета и рассчитываем оставшийся бюджет
-        budget_line = []
-        remaining_budget = total_budget  # 🟢 Изначально весь бюджет
-        spent_so_far = 0  # 🟢 Потрачено на текущий день
+		budget_line = []
+		remaining_budget = total_budget
+		spent_so_far = 0
 
-        for i, date in enumerate(sorted_dates):
-            if i == 0:
-                budget_line.append(first_day_budget)
-            else:
-                spent_so_far += sorted_amounts[i - 1]
-                
-            # 🟢 Считаем оставшиеся дни до конца месяца
-            last_day_of_month = datetime(date.year, date.month, 31)  # Последний день марта
-            remaining_days = (last_day_of_month - date).days  # Количество дней до конца месяца
+		for i, date in enumerate(sorted_dates):
+			if i == 0:
+				budget_line.append(first_day_budget)
+			else:
+				spent_so_far += sorted_amounts[i - 1]
 
-            # 🟢 Уменьшаем оставшийся бюджет с учётом трат текущего дня
-            remaining_budget -= sorted_amounts[i]
+			last_day_of_month = date.replace(day=31)
+			remaining_days = (last_day_of_month - date).days
 
-            # 🟢 Считаем дневной бюджет от оставшегося бюджета
-            if remaining_days > 0:
-                daily_budget = max(remaining_budget / remaining_days, 0)
-            else:
-                daily_budget = 0  # Если дней не осталось, бюджет 0
+			remaining_budget -= sorted_amounts[i]
 
-            print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Remaining budget: {remaining_budget}, Daily budget: {daily_budget}")
+			if remaining_days > 0:
+				daily_budget = max(remaining_budget / remaining_days, 0)
+			else:
+				daily_budget = 0
 
-            # 🟢 Добавляем только если длины совпадают
-            if len(budget_line) < len(sorted_dates):
-                budget_line.append(daily_budget)
+			print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Remaining budget: {remaining_budget}, Daily budget: {daily_budget}")
+			budget_line.append(daily_budget)
 
+		# 🟢 Строим столбчатую диаграмму для фактических расходов
+		plt.figure(figsize=(10, 5))
+		plt.bar(sorted_dates, sorted_amounts, color='skyblue', label='Фактические расходы')
 
+		# 🟢 Линия для дневного бюджета поверх столбцов
+		plt.plot(sorted_dates, budget_line, linestyle='--', color='orange', label='Дневной бюджет', marker='o')
 
+		plt.title("Расходы по дням")
+		plt.xlabel("Дата")
+		plt.ylabel("Сумма (AMD)")
+		plt.grid(axis='y', linestyle='--', alpha=0.7)
+		plt.xticks(sorted_dates, rotation=45, ha='right')
+		plt.legend()
+		plt.tight_layout()
 
-        # Строим график
-        plt.figure(figsize=(10, 5))
-        # 🟢 Столбчатая диаграмма для фактических расходов
-        plt.bar(sorted_dates, sorted_amounts, color='skyblue', label='Фактические расходы')
+		image_stream = BytesIO()
+		plt.savefig(image_stream, format='png')
+		image_stream.seek(0)
+		plt.close()
 
-        # 🟢 Линия для дневного бюджета поверх столбцов
-        plt.plot(sorted_dates, budget_line, linestyle='--', color='orange', label='Дневной бюджет', marker='o')
-
-        plt.title("Расходы по дням")
-        plt.xlabel("Дата")
-        plt.ylabel("Сумма (AMD)")
-        plt.grid(True, linestyle='--', alpha=0.7)
-        plt.xticks(sorted_dates, rotation=45, ha='right')
-        plt.legend()
-        plt.tight_layout()
-
-        image_stream = BytesIO()
-        plt.savefig(image_stream, format='png')
-        image_stream.seek(0)
-        plt.close()
-
-        return image_stream
-    except Exception as e:
-        logging.error(f"Ошибка при генерации графика: {e}")
-        return None
+		return image_stream
+	except Exception as e:
+		logging.error(f"Ошибка при генерации графика: {e}")
+		return None
 
 
 
