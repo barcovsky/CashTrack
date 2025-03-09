@@ -208,15 +208,16 @@ def recalculate_daily_budget(initial_budget):
 		values = sheet.get_all_values()
 		total_budget_spent = 0
 		for row in values:
-		if len(row) >= 3:
-                	try:
-				expense_date = row[2].strip()
-				expense_amount = float(row[1].strip().replace(",", "").replace(" ", ""))
-				# Учитываем только траты за текущий месяц на основе фейковой даты
-				if expense_date[:7] == current_date.strftime("%Y-%m"):
+	if len(row) >= 3:
+		try:
+			expense_date = row[2].strip()
+			expense_amount = float(row[1].strip().replace(",", "").replace(" ", ""))
+			# Учитываем только траты за текущий месяц на основе фейковой даты
+			if expense_date[:7] == current_date.strftime("%Y-%m"):
 				total_budget_spent += expense_amount
-				except ValueError:
-				continue
+		except ValueError:
+			continue
+
 
         # Оставшийся бюджет за месяц
         remaining_budget = fixed_monthly_budget - total_budget_spent
