@@ -466,7 +466,7 @@ def generate_expense_chart():
         date_totals = {}
 
         # 🟢 Получаем значения бюджета из ячеек B17 и B18
-try:
+
 total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
 first_day_budget = float(sheet.acell("B18").value.strip().replace(",", ".").replace(" ", ""))  # 🟢 Исправлено!
 
@@ -479,8 +479,6 @@ if first_day_budget > total_budget:
 print("Total budget (B17):", total_budget)
 print("First day budget (B18):", first_day_budget)
 
-except Exception as e:  # 🟢 Верни этот блок, если он был случайно удалён
-    print("Ошибка при получении бюджета:", e)
 
 
         for row in values:
