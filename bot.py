@@ -464,27 +464,32 @@ def generate_expense_chart():
     try:
         # Получаем данные из Google Sheets
         values = sheet.get("A21:C1000")
-        category_totals = {}
+        date_totals = {}
 
         # Обрабатываем данные
         for row in values:
             if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
                 continue
 
-            category = row[0].strip()
+            date = row[2].strip()
             amount = float(row[1].strip().replace(",", "").replace(" ", ""))
 
-            if category in category_totals:
-                category_totals[category] += amount
+            if date in date_totals:
+                date_totals[date] += amount
             else:
-                category_totals[category] = amount
+                date_totals[date] = amount
 
-        # Строим график по категориям
+        # Сортируем даты по возрастанию
+        sorted_dates = sorted(date_totals.keys())
+        sorted_amounts = [date_totals[date] for date in sorted_dates]
+
+        # Строим график по дням
         plt.figure(figsize=(10, 5))
-        plt.bar(category_totals.keys(), category_totals.values(), color='skyblue')
-        plt.title("Расходы по категориям")
-        plt.xlabel("Категории")
+        plt.plot(sorted_dates, sorted_amounts, marker='o', linestyle='-', color='skyblue')
+        plt.title("Расходы по дням")
+        plt.xlabel("Дата")
         plt.ylabel("Сумма (AMD)")
+        plt.grid(True, linestyle='--', alpha=0.7)
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
 
