@@ -195,7 +195,7 @@ def recalculate_daily_budget(initial_budget):
 		current_date = datetime.now(armenia_tz) if not fake_date else datetime.strptime(fake_date, "%Y-%m-%d")
 
 		# 🟢 Считаем оставшиеся дни без +1 дня
-		last_day_of_month = datetime(current_date.year, current_date.month, 31)
+		last_day_of_month = armenia_tz.localize(datetime(current_date.year, current_date.month, 31))
 		# 🟢 Добавляем +1 день, если текущий день ещё не закончился
 		remaining_days = max((last_day_of_month - current_date).days + 1, 0)
 
