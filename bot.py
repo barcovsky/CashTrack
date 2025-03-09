@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import os
-
+from io import BytesIO
 
 # Глобальная переменная для хранения начального лимита на месяц
 initial_budget = None
