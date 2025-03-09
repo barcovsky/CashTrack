@@ -482,6 +482,8 @@ scheduler.add_job(send_weekly_stats, CronTrigger(day_of_week='mon', hour=14, min
 # 📊 Функция для создания графика расходов по категориям
 def generate_expense_chart():
 	try:
+		import pytz
+		armenia_tz = pytz.timezone('Asia/Yerevan')
 		values = sheet.get("A21:C1000")
 		date_totals = {}
 
@@ -499,11 +501,11 @@ def generate_expense_chart():
 		for row in values:
 			if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
 				continue
-			date = datetime.strptime(row[2].strip(), "%Y-%m-%d")
+			date = datetime.strptime(row[2].strip(), "%Y-%m-%d").date()
 			amount = float(row[1].strip().replace(",", "").replace(" ", ""))
 			date_totals[date] = date_totals.get(date, 0) + amount
 
-		# 🟢 Добавляем нулевые траты для дней без расходов
+		# 🟢 Добавляем нулевые траты для всех дней от начала до текущей даты
 		start_date = min(date_totals.keys())
 		end_date = max(date_totals.keys())
 		current_date = start_date
@@ -512,6 +514,11 @@ def generate_expense_chart():
 			if current_date not in date_totals:
 				date_totals[current_date] = 0  # 🟢 Если нет трат за день, ставим 0
 			current_date += timedelta(days=1)
+
+		# 🟢 Если текущая дата больше последней в date_totals, добавляем её с нулём
+		current_date = datetime.now(armenia_tz).date()
+		if current_date > end_date:
+			date_totals[current_date] = 0
 
 		# 🟢 Обновляем списки после добавления нулей
 		sorted_dates = sorted(date_totals.keys())
