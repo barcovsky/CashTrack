@@ -462,85 +462,69 @@ scheduler.add_job(send_weekly_stats, CronTrigger(day_of_week='mon', hour=14, min
 # 📊 Функция для создания графика расходов по категориям
 def generate_expense_chart():
     try:
-        # Получаем данные из Google Sheets
         values = sheet.get("A21:C1000")
         date_totals = {}
 
-        # 🟢 Получаем значения бюджета из ячеек B17 и B18
         total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
         first_day_budget = float(sheet.acell("B18").value.strip().replace(",", "").replace(" ", ""))
 
-        # Обрабатываем данные расходов и собираем суммы по датам
+        # 🟢 Отладка бюджета
+        print("Total budget (B17):", total_budget)
+        print("First day budget (B18):", first_day_budget)
+
         for row in values:
             if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
                 continue
 
-            date = datetime.strptime(row[2].strip(), "%Y-%m-%d")  # 🟢 Преобразуем строку в дату
+            date = datetime.strptime(row[2].strip(), "%Y-%m-%d")
             amount = float(row[1].strip().replace(",", "").replace(" ", ""))
+            date_totals[date] = date_totals.get(date, 0) + amount
 
-            if date in date_totals:
-                date_totals[date] += amount
-            else:
-                date_totals[date] = amount
+        # 🟢 Отладка данных по датам и тратам
+        print("Dates and amounts:", date_totals)
 
-        # 🟢 Сортируем даты и заполняем пропущенные даты нулями
-        all_dates = sorted(date_totals.keys())
-        start_date = all_dates[0]
-        end_date = all_dates[-1]
-        current_date = start_date
-
-        # 🟢 Создаём полные списки дат и расходов
-        sorted_dates = []
+        sorted_dates = sorted(date_totals.keys())
         sorted_amounts = []
 
-        while current_date <= end_date:
-            sorted_dates.append(current_date)
-            sorted_amounts.append(date_totals.get(current_date, 0))  # Если трат не было, ставим 0
-            current_date += timedelta(days=1)
+        for current_date in sorted_dates:
+            sorted_amounts.append(date_totals.get(current_date, 0))
 
-        # 🟢 Создаём динамическую линию бюджета
+        # 🟢 Отладка трат
+        print("Sorted amounts:", sorted_amounts)
+
         budget_line = []
-        remaining_budget = total_budget  # Изначально весь бюджет
-        spent_so_far = 0  # Потрачено на текущий день
+        remaining_budget = total_budget
+        spent_so_far = 0
 
         for i, date in enumerate(sorted_dates):
             if i == 0:
-                # 🟢 Первый день: бюджет из B18
                 budget_line.append(first_day_budget)
             else:
-                # 🟢 Последующие дни: считаем оставшийся бюджет
-                spent_so_far += sorted_amounts[i - 1]  # Траты до текущего дня
-                remaining_days = len(sorted_dates) - i  # Оставшиеся дни
+                spent_so_far += sorted_amounts[i - 1]
+                remaining_days = len(sorted_dates) - i
 
-                # 🟢 Если есть оставшиеся дни, делим остаток бюджета на них
                 if remaining_days > 0:
                     daily_budget = max((total_budget - spent_so_far) / remaining_days, 0)
                 else:
-                    daily_budget = 0  # Если дней не осталось, бюджет 0
+                    daily_budget = 0
+
+                # 🟢 Отладка бюджета по дням
+                print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Daily budget: {daily_budget}")
 
                 budget_line.append(daily_budget)
 
-        # 🟢 Строим график по дням
+        # Строим график
         plt.figure(figsize=(10, 5))
         plt.plot(sorted_dates, sorted_amounts, marker='o', linestyle='-', color='skyblue', label='Фактические расходы')
-        
-        # 🟢 Добавляем динамическую линию бюджета
         plt.plot(sorted_dates, budget_line, linestyle='--', color='orange', label='Дневной бюджет')
-
         plt.title("Расходы по дням")
         plt.xlabel("Дата")
         plt.ylabel("Сумма (AMD)")
         plt.grid(True, linestyle='--', alpha=0.7)
-
-        # 🟢 Показываем каждую дату на оси X
         plt.xticks(sorted_dates, rotation=45, ha='right')
-
-        # 🟢 Показываем легенду
         plt.legend()
-
         plt.tight_layout()
 
-        # Сохраняем график в память
         image_stream = BytesIO()
         plt.savefig(image_stream, format='png')
         image_stream.seek(0)
