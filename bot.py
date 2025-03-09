@@ -189,65 +189,63 @@ def get_today_expenses():
 
 def recalculate_daily_budget(initial_budget):
 	try:
-		# Используем фейковую дату, если она установлена
-		import pytz  # 🟢 Импортируем pytz для часовых поясов
+		# 🟢 Импортируем pytz для часовых поясов
+		import pytz  
 		armenia_tz = pytz.timezone('Asia/Yerevan')
 		current_date = datetime.now(armenia_tz) if not fake_date else datetime.strptime(fake_date, "%Y-%m-%d")
 
-        
-		# 🟢 Исправлено: считаем оставшиеся дни без +1 дня
+		# 🟢 Считаем оставшиеся дни без +1 дня
 		last_day_of_month = datetime(current_date.year, current_date.month, 31)
-		# 🟢 Исправлено: добавляем +1 день, если текущий день ещё не закончился
+		# 🟢 Добавляем +1 день, если текущий день ещё не закончился
 		remaining_days = max((last_day_of_month - current_date).days + 1, 0)
 
-
-		# Фиксируем общий месячный бюджет из ячейки B17
+		# 🟢 Фиксируем общий месячный бюджет из ячейки B17
 		fixed_monthly_budget = get_monthly_budget()
-        
-		# Получаем все траты за текущий месяц
+
+		# 🟢 Получаем все траты за текущий месяц
 		values = sheet.get_all_values()
 		total_budget_spent = 0
 		for row in values:
-	if len(row) >= 3:
-		try:
-			expense_date = row[2].strip()
-			expense_amount = float(row[1].strip().replace(",", "").replace(" ", ""))
-			# Учитываем только траты за текущий месяц на основе фейковой даты
-			if expense_date[:7] == current_date.strftime("%Y-%m"):
-				total_budget_spent += expense_amount
-		except ValueError:
-			continue
+			if len(row) >= 3:
+				try:
+					expense_date = row[2].strip()
+					expense_amount = float(row[1].strip().replace(",", "").replace(" ", ""))
+					# 🟢 Учитываем только траты за текущий месяц на основе фейковой даты
+					if expense_date[:7] == current_date.strftime("%Y-%m"):
+						total_budget_spent += expense_amount
+				except ValueError:
+					continue
 
+		# 🟢 Оставшийся бюджет за месяц
+		remaining_budget = fixed_monthly_budget - total_budget_spent
 
-        # Оставшийся бюджет за месяц
-        remaining_budget = fixed_monthly_budget - total_budget_spent
+		# 🟢 Если перерасход, уменьшаем будущие лимиты
+		if total_budget_spent > fixed_monthly_budget:
+			logging.info(f"Перерасход! Бюджет в минусе: {total_budget_spent - fixed_monthly_budget} AMD")
+			remaining_budget = 0
 
-        # Если перерасход, уменьшаем будущие лимиты
-        if total_budget_spent > fixed_monthly_budget:
-            logging.info(f"Перерасход! Бюджет в минусе: {total_budget_spent - fixed_monthly_budget} AMD")
-            remaining_budget = 0
+		# 🟢 Логи для отладки
+		logging.info(f"=== Перерасчёт дневного лимита ===")
+		logging.info(f"Фиксированный месячный бюджет: {fixed_monthly_budget}")
+		logging.info(f"Фактически потрачено за месяц: {total_budget_spent}")
+		logging.info(f"Оставшийся бюджет: {remaining_budget}")
+		logging.info(f"Оставшиеся дни в месяце: {remaining_days}")
 
-        # 🟢 Логи для отладки
-        logging.info(f"=== Перерасчёт дневного лимита ===")
-        logging.info(f"Фиксированный месячный бюджет: {fixed_monthly_budget}")
-        logging.info(f"Фактически потрачено за месяц: {total_budget_spent}")
-        logging.info(f"Оставшийся бюджет: {remaining_budget}")
-        logging.info(f"Оставшиеся дни в месяце: {remaining_days}")
+		# 🟢 Новый дневной лимит
+		if remaining_days > 0:
+			new_budget = max(remaining_budget / remaining_days, 0)
+		else:
+			new_budget = 0
 
-        # Новый дневной лимит
-        if remaining_days > 0:
-            new_budget = max(remaining_budget / remaining_days, 0)
-        else:
-            new_budget = 0
+		logging.info(f"Пересчитанный дневной лимит: {new_budget}")
+		logging.info(f"===================================")
 
-        logging.info(f"Пересчитанный дневной лимит: {new_budget}")
-        logging.info(f"===================================")
+		return round(new_budget, 2)
 
-        return round(new_budget, 2)
+	except Exception as e:
+		logging.error(f"Ошибка при перерасчёте бюджета: {e}")
+		return initial_budget
 
-    except Exception as e:
-        logging.error(f"Ошибка при перерасчёте бюджета: {e}")
-        return initial_budget
 
 
 
