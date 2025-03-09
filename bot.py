@@ -467,19 +467,17 @@ def generate_expense_chart():
 
         # 🟢 Получаем значения бюджета из ячеек B17 и B18
 
-total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
-first_day_budget = float(sheet.acell("B18").value.strip().replace(",", ".").replace(" ", ""))  # 🟢 Исправлено!
+        total_budget = float(sheet.acell("B17").value.strip().replace(",", "").replace(" ", ""))
+        first_day_budget = float(sheet.acell("B18").value.strip().replace(",", ".").replace(" ", ""))
 
-# 🟢 Временно ограничим бюджет первого дня до разумной суммы
-if first_day_budget > total_budget:
-    print("Warning: First day budget is too high! Using total budget instead.")
-    first_day_budget = total_budget  # Временно заменим, чтобы график не ломался
+        # 🟢 Временно ограничим бюджет первого дня до разумной суммы
+        if first_day_budget > total_budget:
+            print("Warning: First day budget is too high! Using total budget instead.")
+            first_day_budget = total_budget  # Временно заменим, чтобы график не ломался
 
-# 🟢 Отладка бюджета
-print("Total budget (B17):", total_budget)
-print("First day budget (B18):", first_day_budget)
-
-
+        # 🟢 Отладка бюджета
+        print("Total budget (B17):", total_budget)
+        print("First day budget (B18):", first_day_budget)
 
         for row in values:
             if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
