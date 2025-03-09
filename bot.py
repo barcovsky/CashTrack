@@ -1,4 +1,5 @@
 import logging
+import matplotlib.pyplot as plt
 import pytz
 import gspread
 import asyncio
