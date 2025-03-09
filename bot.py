@@ -10,6 +10,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+import os
+
 
 # Глобальная переменная для хранения начального лимита на месяц
 initial_budget = None
