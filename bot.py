@@ -576,7 +576,6 @@ def generate_expense_chart():
 		return None
 
 
-
 # 🖼 Команда /chart для отправки графика
 @router.message(Command("chart"))
 async def send_expense_chart(message: Message):
