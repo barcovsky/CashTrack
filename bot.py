@@ -503,7 +503,9 @@ async def send_expense_chart(message: Message):
     try:
         image_stream = generate_expense_chart()
         if image_stream:
-            await bot.send_photo(chat_id=message.chat.id, photo=image_stream, caption="📊 График расходов по категориям")
+            # 🛠️ Оборачиваем BytesIO в InputFile
+            photo = InputFile(image_stream, filename="expense_chart.png")
+            await bot.send_photo(chat_id=message.chat.id, photo=photo, caption="📊 График расходов по категориям")
         else:
             await message.answer("Не удалось создать график. Проверь данные в таблице.")
     except Exception as e:
