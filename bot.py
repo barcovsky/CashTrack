@@ -542,8 +542,12 @@ def generate_expense_chart():
 
         # Строим график
         plt.figure(figsize=(10, 5))
-        plt.plot(sorted_dates, sorted_amounts, marker='o', linestyle='-', color='skyblue', label='Фактические расходы')
-        plt.plot(sorted_dates, budget_line, linestyle='--', color='orange', label='Дневной бюджет')
+        # 🟢 Столбчатая диаграмма для фактических расходов
+        plt.bar(sorted_dates, sorted_amounts, color='skyblue', label='Фактические расходы')
+
+        # 🟢 Линия для дневного бюджета поверх столбцов
+        plt.plot(sorted_dates, budget_line, linestyle='--', color='orange', label='Дневной бюджет', marker='o')
+
         plt.title("Расходы по дням")
         plt.xlabel("Дата")
         plt.ylabel("Сумма (AMD)")
