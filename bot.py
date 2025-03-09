@@ -500,25 +500,29 @@ def generate_expense_chart():
         print("Sorted amounts:", sorted_amounts)
 
         budget_line = []
-        remaining_budget = total_budget
-        spent_so_far = 0
+remaining_budget = total_budget  # 🟢 Изначально весь бюджет
+spent_so_far = 0  # 🟢 Потрачено на текущий день
 
-        for i, date in enumerate(sorted_dates):
-            if i == 0:
-                budget_line.append(first_day_budget)
-            else:
-                spent_so_far += sorted_amounts[i - 1]
-                remaining_days = len(sorted_dates) - i
+for i, date in enumerate(sorted_dates):
+    if i == 0:
+        budget_line.append(first_day_budget)
+    else:
+        spent_so_far += sorted_amounts[i - 1]
+        remaining_days = len(sorted_dates) - i
 
-                if remaining_days > 0:
-                    daily_budget = max((total_budget - spent_so_far) / remaining_days, 0)
-                else:
-                    daily_budget = 0
+        # 🟢 Уменьшаем оставшийся бюджет каждый день
+        remaining_budget -= sorted_amounts[i - 1]
 
-                # 🟢 Отладка бюджета по дням
-                print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Daily budget: {daily_budget}")
+        # 🟢 Считаем дневной бюджет от оставшегося бюджета
+        if remaining_days > 0:
+            daily_budget = max(remaining_budget / remaining_days, 0)
+        else:
+            daily_budget = 0  # Если дней не осталось, бюджет 0
 
-                budget_line.append(daily_budget)
+        print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Remaining budget: {remaining_budget}, Daily budget: {daily_budget}")
+
+        budget_line.append(daily_budget)
+
 
         # Строим график
         plt.figure(figsize=(10, 5))
