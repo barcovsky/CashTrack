@@ -195,28 +195,28 @@ def recalculate_daily_budget(initial_budget):
 		current_date = datetime.now(armenia_tz) if not fake_date else datetime.strptime(fake_date, "%Y-%m-%d")
 
         
-        # 🟢 Исправлено: считаем оставшиеся дни без +1 дня
-        last_day_of_month = datetime(current_date.year, current_date.month, 31)
-        # 🟢 Исправлено: добавляем +1 день, если текущий день ещё не закончился
-        remaining_days = max((last_day_of_month - current_date).days + 1, 0)
+		# 🟢 Исправлено: считаем оставшиеся дни без +1 дня
+		last_day_of_month = datetime(current_date.year, current_date.month, 31)
+		# 🟢 Исправлено: добавляем +1 день, если текущий день ещё не закончился
+		remaining_days = max((last_day_of_month - current_date).days + 1, 0)
 
 
-        # Фиксируем общий месячный бюджет из ячейки B17
-        fixed_monthly_budget = get_monthly_budget()
+		# Фиксируем общий месячный бюджет из ячейки B17
+		fixed_monthly_budget = get_monthly_budget()
         
-        # Получаем все траты за текущий месяц
-        values = sheet.get_all_values()
-        total_budget_spent = 0
-        for row in values:
-            if len(row) >= 3:
-                try:
-                    expense_date = row[2].strip()
-                    expense_amount = float(row[1].strip().replace(",", "").replace(" ", ""))
-                    # Учитываем только траты за текущий месяц на основе фейковой даты
-                    if expense_date[:7] == current_date.strftime("%Y-%m"):
-                        total_budget_spent += expense_amount
-                except ValueError:
-                    continue
+		# Получаем все траты за текущий месяц
+		values = sheet.get_all_values()
+		total_budget_spent = 0
+		for row in values:
+		if len(row) >= 3:
+                	try:
+				expense_date = row[2].strip()
+				expense_amount = float(row[1].strip().replace(",", "").replace(" ", ""))
+				# Учитываем только траты за текущий месяц на основе фейковой даты
+				if expense_date[:7] == current_date.strftime("%Y-%m"):
+				total_budget_spent += expense_amount
+				except ValueError:
+				continue
 
         # Оставшийся бюджет за месяц
         remaining_budget = fixed_monthly_budget - total_budget_spent
