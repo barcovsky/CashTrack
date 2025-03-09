@@ -167,9 +167,11 @@ def get_remaining_days():
 # Функция для подсчёта трат за сегодня
 def get_today_expenses():
     try:
+        import pytz
+        armenia_tz = pytz.timezone('Asia/Yerevan')
         values = sheet.get_all_values()
         total_spent = 0
-        today = fake_date if fake_date else datetime.now().strftime("%Y-%m-%d")  # Используем fake_date
+        today = fake_date if fake_date else datetime.now(armenia_tz).strftime("%Y-%m-%d")
 
         for row in values:
             if len(row) >= 3:
@@ -185,6 +187,7 @@ def get_today_expenses():
     except Exception as e:
         logging.error(f"Ошибка при подсчёте трат: {e}")
     return 0
+
 
 
 def recalculate_daily_budget(initial_budget):
@@ -331,6 +334,12 @@ async def get_current_budget(message: Message):
 @router.message(Command("budget_left"))
 async def get_budget_left(message: Message):
     try:
+        import pytz
+        armenia_tz = pytz.timezone('Asia/Yerevan')
+        
+        # 🟢 Используем дату с учётом часового пояса
+        today = fake_date if fake_date else datetime.now(armenia_tz).strftime("%Y-%m-%d")
+        
         daily_budget = get_daily_budget_limit()
         total_spent_today = get_today_expenses()
 
