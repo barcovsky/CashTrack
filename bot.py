@@ -14,7 +14,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import os
 from io import BytesIO
-import InputFile
+from aiogram.types import InputFile
+
 
 # Глобальная переменная для хранения начального лимита на месяц
 initial_budget = None
