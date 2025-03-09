@@ -519,6 +519,7 @@ def generate_expense_chart():
 		current_date = datetime.now(armenia_tz).date()
 		if current_date > end_date:
 			date_totals[current_date] = 0
+			end_date = current_date  # 🟢 Обновляем end_date, чтобы синхронизировать длины
 
 		# 🟢 Обновляем списки после добавления нулей
 		sorted_dates = sorted(date_totals.keys())
@@ -576,7 +577,6 @@ def generate_expense_chart():
 	except Exception as e:
 		logging.error(f"Ошибка при генерации графика: {e}")
 		return None
-
 
 
 
