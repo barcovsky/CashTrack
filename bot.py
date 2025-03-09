@@ -191,8 +191,11 @@ def recalculate_daily_budget(initial_budget):
     try:
         # Используем фейковую дату, если она установлена
         current_date = datetime.strptime(fake_date, "%Y-%m-%d") if fake_date else datetime.now()
-        remaining_days = get_remaining_days()
         
+        # 🟢 Исправлено: считаем оставшиеся дни без +1 дня
+        last_day_of_month = datetime(current_date.year, current_date.month, 31)
+        remaining_days = max((last_day_of_month - current_date).days, 0)  # 🟢 Без +1 дня
+
         # Фиксируем общий месячный бюджет из ячейки B17
         fixed_monthly_budget = get_monthly_budget()
         
@@ -218,6 +221,7 @@ def recalculate_daily_budget(initial_budget):
             logging.info(f"Перерасход! Бюджет в минусе: {total_budget_spent - fixed_monthly_budget} AMD")
             remaining_budget = 0
 
+        # 🟢 Логи для отладки
         logging.info(f"=== Перерасчёт дневного лимита ===")
         logging.info(f"Фиксированный месячный бюджет: {fixed_monthly_budget}")
         logging.info(f"Фактически потрачено за месяц: {total_budget_spent}")
@@ -225,7 +229,10 @@ def recalculate_daily_budget(initial_budget):
         logging.info(f"Оставшиеся дни в месяце: {remaining_days}")
 
         # Новый дневной лимит
-        new_budget = max(remaining_budget / remaining_days, 0) if remaining_days > 0 else 0
+        if remaining_days > 0:
+            new_budget = max(remaining_budget / remaining_days, 0)
+        else:
+            new_budget = 0
 
         logging.info(f"Пересчитанный дневной лимит: {new_budget}")
         logging.info(f"===================================")
