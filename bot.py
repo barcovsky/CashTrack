@@ -13,8 +13,8 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import os
-from io import BytesIO
 from aiogram.types import InputFile
+from io import BytesIO, BufferedReader 
 
 
 # Глобальная переменная для хранения начального лимита на месяц
@@ -505,9 +505,9 @@ async def send_expense_chart(message: Message):
     try:
         image_stream = generate_expense_chart()
         if image_stream:
-            # 🛠️ Исправление: передаём BytesIO напрямую в InputFile
-            image_stream.name = "expense_chart.png"  # Добавляем имя файлу в памяти
-            photo = InputFile(image_stream)  # Исправленный код
+            # 🛠️ Исправление: оборачиваем BytesIO в BufferedReader
+            image_stream.name = "expense_chart.png"
+            photo = InputFile(BufferedReader(image_stream))  # Используем BufferedReader
             await bot.send_photo(chat_id=message.chat.id, photo=photo, caption="📊 График расходов по категориям")
         else:
             await message.answer("Не удалось создать график. Проверь данные в таблице.")
