@@ -475,7 +475,7 @@ def generate_expense_chart():
             if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
                 continue
 
-            date = row[2].strip()
+            date = datetime.strptime(row[2].strip(), "%Y-%m-%d")  # 🟢 Преобразуем строку в дату
             amount = float(row[1].strip().replace(",", "").replace(" ", ""))
 
             if date in date_totals:
