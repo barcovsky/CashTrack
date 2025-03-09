@@ -513,11 +513,11 @@ def generate_expense_chart():
 				date_totals[current_date] = 0  # 🟢 Если нет трат за день, ставим 0
 			current_date += timedelta(days=1)
 
-		print("Dates and amounts:", date_totals)
-
+		# 🟢 Обновляем списки после добавления нулей
 		sorted_dates = sorted(date_totals.keys())
 		sorted_amounts = [date_totals.get(date, 0) for date in sorted_dates]
 
+		print("Dates and amounts:", date_totals)
 		print("Sorted amounts:", sorted_amounts)
 
 		budget_line = []
