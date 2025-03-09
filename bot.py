@@ -465,8 +465,18 @@ def generate_expense_chart():
         # Получаем данные из Google Sheets
         values = sheet.get("A21:C1000")
         date_totals = {}
+        budget_history = {}
 
-        # Обрабатываем данные
+        # 🟢 Получаем историю дневного бюджета для каждой даты
+        all_values = sheet.get_all_values()
+        for row in all_values:
+            if len(row) >= 2 and row[0] == "Daily budget limit, AMD":
+                for i in range(2, len(row)):
+                    date_cell = all_values[0][i].strip()
+                    if date_cell:
+                        budget_history[date_cell] = float(row[i].strip().replace(",", "").replace(" ", ""))
+
+        # Обрабатываем данные расходов
         for row in values:
             if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
                 continue
@@ -483,14 +493,30 @@ def generate_expense_chart():
         sorted_dates = sorted(date_totals.keys())
         sorted_amounts = [date_totals[date] for date in sorted_dates]
 
+        # 🟢 Создаём динамическую линию бюджета
+        budget_line = []
+        for date in sorted_dates:
+            budget = budget_history.get(date, get_daily_budget_limit())  # Если нет истории, берём текущий бюджет
+            budget_line.append(budget)
+
         # Строим график по дням
         plt.figure(figsize=(10, 5))
-        plt.plot(sorted_dates, sorted_amounts, marker='o', linestyle='-', color='skyblue')
+        plt.plot(sorted_dates, sorted_amounts, marker='o', linestyle='-', color='skyblue', label='Фактические расходы')
+        
+        # 🟢 Добавляем динамическую линию бюджета
+        plt.plot(sorted_dates, budget_line, linestyle='--', color='orange', label='Дневной бюджет')
+
         plt.title("Расходы по дням")
         plt.xlabel("Дата")
         plt.ylabel("Сумма (AMD)")
         plt.grid(True, linestyle='--', alpha=0.7)
-        plt.xticks(rotation=45, ha='right')
+
+        # 🟢 Показываем каждую дату на оси X
+        plt.xticks(sorted_dates, rotation=45, ha='right')
+
+        # 🟢 Показываем легенду
+        plt.legend()
+
         plt.tight_layout()
 
         # Сохраняем график в память
@@ -503,6 +529,7 @@ def generate_expense_chart():
     except Exception as e:
         logging.error(f"Ошибка при генерации графика: {e}")
         return None
+
 
 # 🖼 Команда /chart для отправки графика
 @router.message(Command("chart"))
