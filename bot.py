@@ -194,7 +194,9 @@ def recalculate_daily_budget(initial_budget):
         
         # 🟢 Исправлено: считаем оставшиеся дни без +1 дня
         last_day_of_month = datetime(current_date.year, current_date.month, 31)
-        remaining_days = max((last_day_of_month - current_date).days, 0)  # 🟢 Без +1 дня
+        # 🟢 Исправлено: добавляем +1 день, если текущий день ещё не закончился
+        remaining_days = max((last_day_of_month - current_date).days + 1, 0)
+
 
         # Фиксируем общий месячный бюджет из ячейки B17
         fixed_monthly_budget = get_monthly_budget()
