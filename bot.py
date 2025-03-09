@@ -454,10 +454,71 @@ async def send_weekly_stats():
 scheduler.add_job(send_weekly_stats, CronTrigger(day_of_week='mon', hour=14, minute=0))
 
 
+
+
+# 📊 Функция для создания графика расходов по категориям
+def generate_expense_chart():
+    try:
+        # Получаем данные из Google Sheets
+        values = sheet.get("A21:C1000")
+        category_totals = {}
+
+        # Обрабатываем данные
+        for row in values:
+            if len(row) < 3 or not row[1].strip().replace(",", "").replace(" ", "").isdigit():
+                continue
+
+            category = row[0].strip()
+            amount = float(row[1].strip().replace(",", "").replace(" ", ""))
+
+            if category in category_totals:
+                category_totals[category] += amount
+            else:
+                category_totals[category] = amount
+
+        # Строим график по категориям
+        plt.figure(figsize=(10, 5))
+        plt.bar(category_totals.keys(), category_totals.values(), color='skyblue')
+        plt.title("Расходы по категориям")
+        plt.xlabel("Категории")
+        plt.ylabel("Сумма (AMD)")
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+
+        # Сохраняем график в память
+        image_stream = BytesIO()
+        plt.savefig(image_stream, format='png')
+        image_stream.seek(0)
+        plt.close()
+
+        return image_stream
+    except Exception as e:
+        logging.error(f"Ошибка при генерации графика: {e}")
+        return None
+
+# 🖼 Команда /chart для отправки графика
+@router.message(Command("chart"))
+async def send_expense_chart(message: Message):
+    try:
+        image_stream = generate_expense_chart()
+        if image_stream:
+            await bot.send_photo(chat_id=message.chat.id, photo=image_stream, caption="📊 График расходов по категориям")
+        else:
+            await message.answer("Не удалось создать график. Проверь данные в таблице.")
+    except Exception as e:
+        logging.error(f"Ошибка при отправке графика: {e}")
+        await message.answer("Произошла ошибка при отправке графика.")
+
+
+
+
+
+
+
 async def main():
 
     dp.message.register(get_monthly_stats, Command("stats"))
-
+    dp.message.register(send_expense_chart, Command("chart"))
     dp.message.register(set_fake_date, Command("set_date"))
     dp.message.register(get_budget_left, Command("budget_left"))
     dp.message.register(reset_budget, Command("budget_default"))  # Сброс бюджета
