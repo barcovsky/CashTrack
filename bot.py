@@ -132,9 +132,11 @@ async def add_expense(message: Message):
             return
 
         amount = float(amount)
-        date_today = datetime.now().strftime("%Y-%m-%d")
+        armenia_tz = pytz.timezone('Asia/Yerevan')
+        date_today = datetime.now(armenia_tz).strftime("%Y-%m-%d")
 
         # Запись в Google Таблицу
+	
         sheet.append_row([category, amount, date_today], table_range="A20:C")
 
         # Сохраняем исходный дневной лимит ДО пересчёта
