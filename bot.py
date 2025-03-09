@@ -508,23 +508,24 @@ def generate_expense_chart():
                 budget_line.append(first_day_budget)
             else:
                 spent_so_far += sorted_amounts[i - 1]
+                
+            # 🟢 Считаем оставшиеся дни до конца месяца
+            last_day_of_month = datetime(date.year, date.month, 31)  # Последний день марта
+            remaining_days = (last_day_of_month - date).days  # Количество дней до конца месяца
 
-                # 🟢 Считаем оставшиеся дни до конца месяца
-                last_day_of_month = datetime(date.year, date.month, 31)  # Последний день марта
-                remaining_days = (last_day_of_month - date).days  # Количество дней до конца месяца
+            # 🟢 Уменьшаем оставшийся бюджет с учётом трат текущего дня
+            remaining_budget -= sorted_amounts[i]
 
-                # 🟢 Уменьшаем оставшийся бюджет каждый день
-                remaining_budget -= sorted_amounts[i - 1]
+            # 🟢 Считаем дневной бюджет от оставшегося бюджета
+            if remaining_days > 0:
+                daily_budget = max(remaining_budget / remaining_days, 0)
+            else:
+                daily_budget = 0  # Если дней не осталось, бюджет 0
 
-                # 🟢 Считаем дневной бюджет от оставшегося бюджета
-                if remaining_days > 0:
-                    daily_budget = max(remaining_budget / remaining_days, 0)
-                else:
-                    daily_budget = 0  # Если дней не осталось, бюджет 0
+            print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Remaining budget: {remaining_budget}, Daily budget: {daily_budget}")
 
-                print(f"Date: {date}, Spent so far: {spent_so_far}, Remaining days: {remaining_days}, Remaining budget: {remaining_budget}, Daily budget: {daily_budget}")
+            budget_line.append(daily_budget)
 
-                budget_line.append(daily_budget)
 
 
         # Строим график
